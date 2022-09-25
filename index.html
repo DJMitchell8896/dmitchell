@@ -83,6 +83,19 @@ document.getElementById("demo").innerHTML=book.kind + " , " + book.id + " , " + 
     
     document.getElementById("demo2").innerHTML=book.publisher + " , " + book.publishedDate + " , " + book.description + " , " + book.type + " , " + 
       book.identifier + "identifier";
-    </script>
+    </script>  
+    
+  <body>
+    <p id="demo3"></p>
+    <script> 
+    var book = {
+        type: "ISBN_13",
+        identifier: "9781593274870",
+     
+     
+    };
+    
+    document.getElementById("demo3").innerHTML=book.type + " , " + book.identifier + " identifier ";
+    </script>   
         
 </html>
