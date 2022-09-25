@@ -25,6 +25,43 @@ h2 {text-align: center;}
         <li><a href="Milestone2.html">Milestone2</a></li>  
         <li><a href="Milestone3.html">Milestone3</a></li> 
         <li><a href="Milestone4.html">Milestone4</a></li> 
- </body>
+ </body>  
+    <head>
+    <script src="https://code.jquery.com/jquery-3.6.1.min.js"></script> 
+    <script type="text/javascript">
+    $.ajax({
+       type:"GET",
+       url:"sample.json",
+       success:function(response)
+       {
+        //console.log(response);
+        
+      
+        $("div").append("Note:"+response.note+"<br>To:"+response.to+"><br>From:"+response.from+"><br>Heading:"+response.heading+"><br>Body:"+response.body+"");
+    }
+})
+</script> 
+        
+    })
+
+    </head>
+<body>
+  
+  
+  <body>
+<h2>Breakfast Menu</h2>
+<h3>Food</h3>  
+<p id="demo"></p>
+<script> 
+var food = {
+    item: "Belgian Waffle",
+    price: "$5.95",
+    description:"Two of our famous Belgian Waffles with plenty of real maple syrup",
+    calories: "650",
+ 
+};
+
+document.getElementById("demo").innerHTML=food.item + " , " + food.price + " , " + food.description + " , " + food.calories + "Calories";
+</script>
         
 </html>
