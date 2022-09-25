@@ -49,19 +49,24 @@ h2 {text-align: center;}
   
   
   <body>
-<h2>Breakfast Menu</h2>
+<h2>Book Search</h2>
 <h3>Food</h3>  
 <p id="demo"></p>
 <script> 
-var food = {
-    item: "Belgian Waffle",
-    price: "$5.95",
-    description:"Two of our famous Belgian Waffles with plenty of real maple syrup",
-    calories: "650",
+var book = {
+    kind: "books#volume",
+    id: "Wfan6L9RGgYC",
+    etag:"ZvAF36NdUD0",
+    selflink: "https://www.googleapis.com/books/v1/volumes/Wfan6L9RGgYC",
+    title: "The Modern Web",
+    subtitle: "Multi-device Web Development with HTML5, CSS3, and JavaScript",
+    author: "Peter Gasston",
  
 };
 
-document.getElementById("demo").innerHTML=food.item + " , " + food.price + " , " + food.description + " , " + food.calories + "Calories";
+document.getElementById("demo").innerHTML=book.kind + " , " + book.id + " , " + book.etag + " , " + book.selflink + " , " + book.title + " , " + book.subtitle + " , " 
+  + book.author + "author";
+
 </script>
         
 </html>
