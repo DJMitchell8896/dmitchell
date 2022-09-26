@@ -1,8 +1,13 @@
 $("button").click(function() {
 
   
-$.getJSON( "" , function("json_data".json) { } );
+$.getJSON("json_data.json", function(obj) {  
   
+  $.each(obj, function(key,value) { 
+    $("ul").append("<li>"+value.kind+"</li>");
   
+  });
+  
+});
   
 });
