@@ -78,11 +78,208 @@ body, html {
 
 
 <div id="Home" class="tabcontent">
-  <h3>Home(Book Search)</h3>
-  <p>Home is where the heart is..</p>
-</div>
+  <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Book Test</title>
+        
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css">
+        
+    </head>
+    <body>
+        <br>
+        <div class='container'>
+            <div class="input-group">
+                <span class="input-group-addon" id="basic-addon1">Search book</span>
+                <input id="input" type="text" class="form-control">
+            </div>
+            <br>
+            <div class="panel panel-default">
+                <div class="panel-body" id="previews"></div>
+            </div>
+            
+        </div>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/js/bootstrap.min.js"></script>
+        <script type="text/javascript">
+            $('#input').bind('input', startTimerAction);
+            
+            previewTemplate="<div class='preview-div'>\
+                                <div class='image-div'>\
+                                    <img class='img-responsive fotina'/>\
+                                </div>\
+                                <p class='info'>\
+                                        <strong><span class='title'></span></strong></br>\
+                                        <span class='authors'></span></br>\
+                                        <span class='publish'></span>\
+                                <p>\
+                             </div>"
+             
 
-<div id="News" class="tabcontent">
+            function googleBookRequest(query,successCallback,failCallback){        
+                var url =  "https://www.googleapis.com/books/v1/volumes?";
+                var q = '';        
+                var standard = ["intitle","inauthor","inpublisher","subject","isbn","lccn","oclc"];
+
+                //search params
+                if(query.all)
+                    q += query.all;
+                /*
+                * insert all key->value in query
+                * using google standard 
+                */
+                for( var key in query ){
+                    if(key == 'all')
+                        continue;
+                    if(key in standard)
+                        q += '+'+key+':'+query[key];         
+                }
+                
+                for(var key in query){
+                    if(key == 'all')
+                        continue;
+                    q += '&'+key+'='+query[key];
+                }
+                
+                if(!q)
+                    return;
+
+                console.log("Query to Google Books: \n"+JSON.stringify(query));
+                                
+                url += 'q='+q;
+
+                $.ajax({
+                    dataType: "json",
+                    url: url,
+                    success: successCallback,
+                    fail: failCallback
+                });
+            }
+
+            function filterGoogleBook(googleBook){
+                var filtered = {};                
+                filtered.title = googleBook.title;
+                filtered.authors = googleBook.authors;
+                filtered.thumbnail = '';
+                filtered.publish = '';
+                
+                //thumbnail
+                if(googleBook.imageLinks &&
+                   googleBook.imageLinks.thumbnail)                
+                        filtered.thumbnail = googleBook.imageLinks.thumbnail;
+                
+                //published (parse date)      
+                if(googleBook.publishedDate){                  
+                    var date = new Date(googleBook.publishedDate);
+                    var year = date.getFullYear(date);
+                    filtered.publish = year +' ';
+                }
+                if(googleBook.publisher)                    
+                    filtered.publish += googleBook.publisher;
+                
+                return filtered;
+            }
+        
+            var currTimer;
+
+            function startTimerAction(){
+                var query = $("#input").val();
+                if (currTimer)
+                    window.clearTimeout(currTimer);
+                if(query){
+                    var googleReq = {'all':query,
+                                     'projection':'lite',
+                                     'maxItems':15
+                                    };
+                    currTimer = window.setTimeout( function () { googleBookRequest(googleReq,onQuerySuccess,onQueryFail) }, 1500);
+                        
+                }else
+                    cleanResults();
+            }
+
+            function onQuerySuccess(data){
+                cleanResults();
+                $('#results').html("<pre>"+JSON.stringify(data, null, " ")+"</pre>");
+                if(! data.items)
+                    return;
+                
+                var totalResults = data.items.length;              
+                for(i=0; i<totalResults; i++){
+                    var googleBook = data.items[i].volumeInfo
+                    addPreview(filterGoogleBook(googleBook));
+                }
+            }
+
+            function onQueryFail(){
+                cleanResults();
+            }
+
+            function addPreview(book){
+           
+                var newPreview = $(previewTemplate);
+                if(book.thumbnail){
+                    newPreview.find('.fotina').attr("src",book.thumbnail);
+                }else{
+                    newPreview.find('.fotina').hide();
+                    bookIcon = $(svgBookIcon);
+                    newPreview.find('.image-div').append(bookIcon);
+                }
+                newPreview.find('.title').html(book.title);
+                newPreview.find('.authors').html(book.authors);
+                newPreview.find('.publish').html(book.publish);
+                newPreview.tooltip({html:true,
+                                    placement: "auto",
+                                    title:
+                                        "<strong>"+book.title+"</strong><br>"+
+                                        book.authors+"<br>"+
+                                        book.publish});
+                newPreview.hide();
+                $('#previews').append(newPreview);
+                newPreview.fadeIn('slow');
+            }
+            
+            function cleanResults(){
+                $('#previews').html("");
+                $('#results').html("");
+            }
+        </script>
+    </body>
+
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  </div>
+
+
+  
+  
+  
+  
+  
+  
+  
+  
+ <div id="News" class="tabcontent">
   <h3>News</h3>
   <p>Some news this fine day!</p> 
 </div>
