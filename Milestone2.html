@@ -100,152 +100,274 @@ body, html {
             </div>
             
         </div>
-        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
-        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/js/bootstrap.min.js"></script>
-        <script type="text/javascript">
-            $('#input').bind('input', startTimerAction);
-            
-            previewTemplate="<div class='preview-div'>\
-                                <div class='image-div'>\
-                                    <img class='img-responsive fotina'/>\
-                                </div>\
-                                <p class='info'>\
-                                        <strong><span class='title'></span></strong></br>\
-                                        <span class='authors'></span></br>\
-                                        <span class='publish'></span>\
-                                <p>\
-                             </div>"
-             
-
-            function googleBookRequest(query,successCallback,failCallback){        
-                var url =  "https://www.googleapis.com/books/v1/volumes?";
-                var q = '';        
-                var standard = ["intitle","inauthor","inpublisher","subject","isbn","lccn","oclc"];
-
-                //search params
-                if(query.all)
-                    q += query.all;
-                /*
-                * insert all key->value in query
-                * using google standard 
-                */
-                for( var key in query ){
-                    if(key == 'all')
-                        continue;
-                    if(key in standard)
-                        q += '+'+key+':'+query[key];         
-                }
-                
-                for(var key in query){
-                    if(key == 'all')
-                        continue;
-                    q += '&'+key+'='+query[key];
-                }
-                
-                if(!q)
-                    return;
-
-                console.log("Query to Google Books: \n"+JSON.stringify(query));
-                                
-                url += 'q='+q;
-
-                $.ajax({
-                    dataType: "json",
-                    url: url,
-                    success: successCallback,
-                    fail: failCallback
-                });
-            }
-
-            function filterGoogleBook(googleBook){
-                var filtered = {};                
-                filtered.title = googleBook.title;
-                filtered.authors = googleBook.authors;
-                filtered.thumbnail = '';
-                filtered.publish = '';
-                
-                //thumbnail
-                if(googleBook.imageLinks &&
-                   googleBook.imageLinks.thumbnail)                
-                        filtered.thumbnail = googleBook.imageLinks.thumbnail;
-                
-                //published (parse date)      
-                if(googleBook.publishedDate){                  
-                    var date = new Date(googleBook.publishedDate);
-                    var year = date.getFullYear(date);
-                    filtered.publish = year +' ';
-                }
-                if(googleBook.publisher)                    
-                    filtered.publish += googleBook.publisher;
-                
-                return filtered;
-            }
+      <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+      <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+      <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
         
-            var currTimer;
+      <body>
+    <div class="container">
+        <h1> Book Search</h1>
+    <div id="searchBox">
 
-            function startTimerAction(){
-                var query = $("#input").val();
-                if (currTimer)
-                    window.clearTimeout(currTimer);
-                if(query){
-                    var googleReq = {'all':query,
-                                     'projection':'lite',
-                                     'maxItems':15
-                                    };
-                    currTimer = window.setTimeout( function () { googleBookRequest(googleReq,onQuerySuccess,onQueryFail) }, 1500);
-                        
-                }else
-                    cleanResults();
-            }
+    <form id="searchForm" class="form-inline">
+        <input type="text" id="searchText">
+        <input type="submit" value="Search">
+    <select id="typeSearch">
+        <option value="-">-</option>
+        <option value="Author">Author</option>
+        <option value="Title">Title</option>
+    </select>
 
-            function onQuerySuccess(data){
-                cleanResults();
-                $('#results').html("<pre>"+JSON.stringify(data, null, " ")+"</pre>");
-                if(! data.items)
-                    return;
-                
-                var totalResults = data.items.length;              
-                for(i=0; i<totalResults; i++){
-                    var googleBook = data.items[i].volumeInfo
-                    addPreview(filterGoogleBook(googleBook));
-                }
-            }
+    <select id="orderSearch">
+        <option value="Order By Title">Order By Title</option>
+        <option value="Order Bt Date">Order By Date</option>
+    </select>
+</form>
+</div>
 
-            function onQueryFail(){
-                cleanResults();
-            }
+<div id="searchResultsText"></div>
+<div id="searchResults"></div>
+<div id="pagination"></div>
+</div>
 
-            function addPreview(book){
-           
-                var newPreview = $(previewTemplate);
-                if(book.thumbnail){
-                    newPreview.find('.fotina').attr("src",book.thumbnail);
-                }else{
-                    newPreview.find('.fotina').hide();
-                    bookIcon = $(svgBookIcon);
-                    newPreview.find('.image-div').append(bookIcon);
-                }
-                newPreview.find('.title').html(book.title);
-                newPreview.find('.authors').html(book.authors);
-                newPreview.find('.publish').html(book.publish);
-                newPreview.tooltip({html:true,
-                                    placement: "auto",
-                                    title:
-                                        "<strong>"+book.title+"</strong><br>"+
-                                        book.authors+"<br>"+
-                                        book.publish});
-                newPreview.hide();
-                $('#previews').append(newPreview);
-                newPreview.fadeIn('slow');
-            }
-            
-            function cleanResults(){
-                $('#previews').html("");
-                $('#results').html("");
-            }
-        </script>
-    </body>
+<style>
+    body
+    {
+        font-size: 200%;
+    }
+    #searchResultsText
+    {
+        margin: 1em 0 1em 0;
+        display:block
+    }
+    #searchResults
+    {
+        margin-top: 1em;
+    }
+ 
+    .bookPublish
+    {
+        border-bottom: thick solid rgb(125, 10, 10);
+        margin-bottom: 1em;
+    }
+    .bookTitleText, .bookAuthorText
+    {
+        font-weight: bold;
+        margin-bottom: 0.5em;
+    }
+    .bookAuthorText
+    {
+        margin-top: 0.5em;
+    }
+    .bookAuthor
+    {
+        margin-bottom: 0.5em;
+    }
+    .bookPublishText,.bookPublish
+    {
+        font-size: 0.8em;
+    }
+    #previous
+    {
+        margin-right: 1em;
+    }
+</style> 
 
+<script>
+    $( document ).ready(function()
+     {
+
+        var info; 
+        var googlecode = ':keyes&key=' + code.api; 
+        var link = "https://www.googleapis.com/books/v1/volumes?q="; 
+        var x=""; 
+        var num = 10; 
+        var y = 0; 
+        var resultss = 0; 
+        var sec =""; 
+
+    $( "#searchForm" ).submit(function( event ) 
+    {
+        Report();
+        info = $("#searchForm input:text").val(); 
+        switch ($("#typeSearch").val()){
+        case "Author":
+        x = "+inauthor";
+        break;
+        case "Title":
+        x = "+intitle";
+        break;
+        case "-":
+        x ="";
+        break;
+        default:
+        x ="";
+    }
+        switch ($("#orderSearch").val())
+        {
+            case "Relevance":
+            sec = "";
+            break;
+            case "Publish Date":
+            sec = "&orderBy=newest";
+            break;
+            default:
+            sec = "";
+        }
+
+    if (info =="")
+    {
+
+        Final();
+        BooksRef();
+        Page();
+        Report();
+
+        $("#searchResults").append(" Try again");
+    }
+    else
+    {
+        requestBooks(info,y,num,x,sec);
+    }
+        event.preventDefault();
+}); 
+
+function requestBooks(info,y,num,x,sec)
+{
+    var a = new XMLHttpRequest(); 
+    var hyper = link+info+x+googlecode+"&startIndex="+y+"&maxResults="+num+sec; 
+    a.open('GET', hyper, true);
+    a.send(); //sends the request
+    a.addEventListener("readystatechange", processRequest, false);
+
+    function processRequest(z) 
+    {
+        if (a.readyState == 4 && a.status == 200) 
+        {
+            var res = JSON.parse(a.responseText); 
+            TotalRes(res);
+            DRes(res);
+            createPagination(res);
+        }
+    }
+} 
+ 
+
+function createPagination(res)
+{
+    Page();
+    resultss = res.totalItems;
+
+if (y == 0 && resultss>num)
+{
+    prev = y;
+    y =y + num;
+    $("#pagination").prepend("<a href='#' id='next'>Next</a>");
+    $("#next").click(function() 
+    {
+        requestBooks(info,y,num,x,sec);
+        $('html, body').animate({ scrollTop: 0 }, 'slow');
+        event.preventDefault();
+    });
+}
+else
+{
+    if (y !=0 && y < resultss && res.items.length == num)
+    {
+        Page();
+        $("#pagination").prepend("<a href='#' id='previous'>Previous</a><a href='#' id='next'>Next</a>");
+
+        $("#next").click(function() 
+        {
+            y =y + num;
+            requestBooks(info,y,num,x,sec);
+            $('html, body').animate({ scrollTop: 0 }, 'slow'); 
+            event.preventDefault();
+        });
+
+$("#previous").click(function() 
+{
+    y =y - num;
+    requestBooks(info,y,num,x,sec);
+    $('html, body').animate({ scrollTop: 0 }, 'slow');
+    event.preventDefault();
+}); 
+}
+    else
+    { 
+        if(y !=0)
+    {
+        Page();
+
+        $("#pagination").prepend("<a href='#' id='previous'>Previous</a>");
+        $("#previous").click(function() 
+        {
+            y =y - num;
+            requestBooks(info,y,num,x,sec);
+            $('html, body').animate({ scrollTop: 0 }, 'slow'); 
+            event.preventDefault();
+        });}
+    }
+    }
+}
+
+function Page()
+{
+    $("#pagination").empty();
+}
+ 
+
+function TotalRes(res)
+{
+    Final();
+    $("#searchResultsText").prepend("A total of <b>"+ res.totalItems +"</b> results have been found with the keyword <b>"+ info +"</b>");
+}
+ 
+
+function DRes(res)
+{
+    BooksRef();
+    for (i=0;i<res.items.length;i++)
+    {
+        console.log(res.items[i].volumeInfo.title)
+        $("#searchResults").append("<div class ='bookTitleText'>Title</div>");
+        $("#searchResults").append("<div class ='bookTitle'>"+res.items[i].volumeInfo.title+"</div>");
+        $("#searchResults").append("<div class ='bookAuthorText'>Author</div>");
+        $("#searchResults").append("<div class ='bookAuthor'>"+res.items[i].volumeInfo.authors+"</div>");
+        $("#searchResults").append("<div class ='bookPublishText '>Published:</div>");
+        $("#searchResults").append("<div class ='bookPublish'>"+res.items[i].volumeInfo.publishedDate+"</div>");
+      
+    }
+} 
+ 
+
+function Final()
+{
+    $("#searchResultsText").empty();
+}
+ 
+function BooksRef()
+{
+    $("#searchResults").empty();
+}
+ 
+
+function Report()
+{
+    info ="";
+    x="";
+    y = 0;
+    prevf = 0;
+}
+ 
+}); 
+</script> 
+<script>
+     var code = 
+     {
+        api : 'AIzaSyC3Ir4XpMldbXNcRSQXnpKCGOaryX4eug4',
+    }
+</script>
   
   
   
